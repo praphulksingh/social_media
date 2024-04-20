@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/userModel";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request:Request){
@@ -34,17 +34,23 @@ export async function POST(request:Request){
         },{
             status:400
         })
+    
         }else{
-            const hashedPassword=await bcryptjs.hash(password, 10)
+            const hashedPassword=await bcrypt.hash(password, 10)
+           
             existingUserByEmail.password=hashedPassword
+            
             existingUserByEmail.verifyCode=verifyCode;
+           
             existingUserByEmail.verifyCodeExpiry=new Date(Date.now()+3600000)
+            
             await existingUserByEmail.save()
+           
         }
-        
+       
     }
     else{/*if the user has fresh email */
-        const hashedPassword=await bcryptjs.hash(password,10)
+        const hashedPassword=await bcrypt.hash(password,10)
         /*in below code we are setting expiry time to 1 hour and because of new keyword we can use the variable */
         const expiryDate=new Date()
         expiryDate.setHours(expiryDate.getHours()+1)
@@ -58,8 +64,8 @@ export async function POST(request:Request){
             isVerified: false,
             isAcceptingMessage:true,
             messages: []
-        })
-        await newUser.save()
+        }).save()
+       
     }
 
         /*sending email to user , */
@@ -68,6 +74,7 @@ export async function POST(request:Request){
             verifyCode,
             username
         )
+       
         if (!emailResponse.success) {
             return Response.json({
             success:false,
@@ -87,7 +94,7 @@ export async function POST(request:Request){
     
 
    } catch (error) {
-    console.error("Error while regestering user",error)
+    // console.error("Error while regestering user",error)
     return Response.json({
         success:false,
         message:"Error Regestring user"
